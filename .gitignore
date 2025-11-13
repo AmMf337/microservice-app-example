@@ -1,0 +1,12 @@
+# Ignorar entornos virtuales
+venv/
+.env/
+
+# Ignorar caché de Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+locust/venv/
+locust/__pycache__/
+

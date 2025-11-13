@@ -1,0 +1,20 @@
+# Namespace principal para los microservicios
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: microservices
+  labels:
+    name: microservices
+    project: todo-app
+  annotations:
+    description: "Namespace para la aplicación de microservicios distribuidos"
+---
+# ServiceAccount para los microservicios
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: microservices-sa
+  namespace: microservices
+  labels:
+    app: microservices
+    project: todo-app

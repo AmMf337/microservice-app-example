@@ -1,0 +1,105 @@
+# Deployment para Redis
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+  namespace: microservices
+  labels:
+    app: redis
+    component: database
+    tier: infrastructure
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+        component: database
+        tier: infrastructure
+    spec:
+      serviceAccountName: microservices-sa
+      containers:
+      - name: redis
+        image: redis:7-alpine
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 6379
+          name: redis
+          protocol: TCP
+        command: ["redis-server"]
+        args: ["--bind", "0.0.0.0", "--port", "6379"]
+---
+# Service para Redis
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  namespace: microservices
+  labels:
+    app: redis
+spec:
+  type: ClusterIP
+  ports:
+  - port: 6379
+    targetPort: 6379
+    protocol: TCP
+    name: redis
+  selector:
+    app: redis
+---
+# Deployment para Zipkin
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zipkin
+  namespace: microservices
+  labels:
+    app: zipkin
+    component: tracing
+    tier: infrastructure
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: zipkin
+  template:
+    metadata:
+      labels:
+        app: zipkin
+        component: tracing
+        tier: infrastructure
+    spec:
+      serviceAccountName: microservices-sa
+      containers:
+      - name: zipkin
+        image: openzipkin/zipkin:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 9411
+          name: http
+          protocol: TCP
+        envFrom:
+        - configMapRef:
+            name: zipkin-config
+---
+# Service para Zipkin
+apiVersion: v1
+kind: Service
+metadata:
+  name: zipkin
+  namespace: microservices
+  labels:
+    app: zipkin
+spec:
+  type: ClusterIP
+  ports:
+  - port: 9411
+    targetPort: 9411
+    protocol: TCP
+    name: http
+  selector:
+    app: zipkin
+

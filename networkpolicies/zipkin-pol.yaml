@@ -1,0 +1,57 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: zipkin-netpol
+  namespace: microservices
+spec:
+  podSelector:
+    matchLabels:
+      app: zipkin
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  # Permite tráfico desde frontend
+  - from:
+    - podSelector:
+        matchLabels:
+          app: frontend
+    ports:
+    - protocol: TCP
+      port: 9411
+  # Permite tráfico desde auth-api
+  - from:
+    - podSelector:
+        matchLabels:
+          app: auth-api
+    ports:
+    - protocol: TCP
+      port: 9411
+  # Permite tráfico desde users-api
+  - from:
+    - podSelector:
+        matchLabels:
+          app: users-api
+    ports:
+    - protocol: TCP
+      port: 9411
+  # Permite tráfico desde todos-api
+  - from:
+    - podSelector:
+        matchLabels:
+          app: todos-api
+    ports:
+    - protocol: TCP
+      port: 9411
+  egress:
+  # Permite DNS
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: kube-system
+    ports:
+    - protocol: UDP
+      port: 53
+  # Permite salida a cualquier lugar (para almacenamiento externo si es necesario)
+  - {}
+

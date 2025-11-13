@@ -1,0 +1,39 @@
+---
+# Deployment para Log Processor (Python)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: log-processor
+  namespace: microservices
+  labels:
+    app: log-processor
+    component: worker
+    tier: processing
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: log-processor
+  template:
+    metadata:
+      labels:
+        app: log-processor
+        component: worker
+        tier: processing
+    spec:
+      serviceAccountName: microservices-sa
+      containers:
+      - name: log-processor
+        image: log-message:latest
+        imagePullPolicy: IfNotPresent
+         resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            |memory: 256Mi
+        # Variables de entorno desde ConfigMap
+        envFrom:
+        - configMapRef:
+            name: log-processor-config

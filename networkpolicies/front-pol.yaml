@@ -1,0 +1,49 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: frontend-netpol
+  namespace: microservices
+spec:
+  podSelector:
+    matchLabels:
+      app: frontend
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - {}  # Permite todo el tráfico entrante (necesario para LoadBalancer)
+  egress:
+  # Permite DNS
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: kube-system
+    ports:
+    - protocol: UDP
+      port: 53
+  # Permite salida a auth-api
+  - to:
+    - podSelector:
+        matchLabels:
+          app: auth-api
+    ports:
+    - protocol: TCP
+      port: 8081
+  # Permite salida a todos-api
+  - to:
+    - podSelector:
+        matchLabels:
+          app: todos-api
+    ports:
+    - protocol: TCP
+      port: 8082
+  # Permite salida a zipkin
+  - to:
+    - podSelector:
+        matchLabels:
+          app: zipkin
+    ports:
+    - protocol: TCP
+      port: 9411
+
+---

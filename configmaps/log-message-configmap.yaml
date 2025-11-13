@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: log-processor-config
+  namespace: microservices
+  labels:
+    app: log-processor
+    component: worker
+    tier: processing
+data:
+  # Configuración de Redis para Pub/Sub
+  REDIS_HOST: "redis"
+  REDIS_PORT: "6379"
+  REDIS_CHANNEL: "log_channel"
+  REDIS_DB: "0"
+  
+  # URL de Zipkin para distributed tracing
+  ZIPKIN_URL: "http://zipkin:9411/api/v2/spans"
+  
+  # Nombre del servicio para Zipkin tracing
+  SERVICE_NAME: "log-message-processor"
+  
+  # Configuración de Python
+  PYTHONUNBUFFERED: "1"
+  PYTHONIOENCODING: "utf-8"
+  
+  # Configuración de logging
+  LOG_LEVEL: "INFO"
+  
+  # Configuración de delay aleatorio (en ms)
+  MAX_DELAY_MS: "2000"
+  MIN_DELAY_MS: "0"

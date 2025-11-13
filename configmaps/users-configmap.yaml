@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: users-api-config
+  namespace: microservices
+  labels:
+    app: users-api
+    component: backend
+    tier: data
+data:
+  # Puerto del servidor
+  SERVER_PORT: "8083"
+  
+  # Configuración de Spring Boot Application
+  SPRING_APPLICATION_NAME: "users-api"
+  
+  # Configuración de Zipkin (Spring Cloud Sleuth)
+  SPRING_ZIPKIN_BASEURL: "http://zipkin:9411/"
+  SPRING_SLEUTH_SAMPLER_PROBABILITY: "1.0"
+  
+  # Configuración de H2 Database (base de datos en memoria)
+  SPRING_DATASOURCE_URL: "jdbc:h2:mem:usersdb"
+  SPRING_DATASOURCE_DRIVER_CLASS_NAME: "org.h2.Driver"
+  SPRING_DATASOURCE_USERNAME: "sa"
+  SPRING_DATASOURCE_PASSWORD: ""
+  
+  # Configuración de JPA/Hibernate
+  SPRING_JPA_DATABASE_PLATFORM: "org.hibernate.dialect.H2Dialect"
+  SPRING_JPA_HIBERNATE_DDL_AUTO: "create-drop"
+  SPRING_JPA_SHOW_SQL: "false"
+  
+  # Configuración de H2 Console (deshabilitado en producción)
+  SPRING_H2_CONSOLE_ENABLED: "false"
+  
+  # Configuración de logging
+  LOGGING_LEVEL_ROOT: "INFO"
+  LOGGING_LEVEL_COM_ELGRIS: "DEBUG"

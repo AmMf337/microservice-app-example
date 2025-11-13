@@ -1,0 +1,48 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: todos-api-netpol
+  namespace: microservices
+spec:
+  podSelector:
+    matchLabels:
+      app: todos-api
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  # Permite tráfico desde frontend
+  - from:
+    - podSelector:
+        matchLabels:
+          app: frontend
+    ports:
+    - protocol: TCP
+      port: 8082
+  egress:
+  # Permite DNS
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: kube-system
+    ports:
+    - protocol: UDP
+      port: 53
+  # Permite salida a redis para logs (CREATE/DELETE)
+  - to:
+    - podSelector:
+        matchLabels:
+          app: redis
+    ports:
+    - protocol: TCP
+      port: 6379
+  # Permite salida a zipkin
+  - to:
+    - podSelector:
+        matchLabels:
+          app: zipkin
+    ports:
+    - protocol: TCP
+      port: 9411
+
+---

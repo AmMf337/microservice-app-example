@@ -1,0 +1,70 @@
+---
+# Deployment para Users API (Spring Boot/Java)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: users-api
+  namespace: microservices
+  labels:
+    app: users-api
+    component: backend
+    tier: data
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: users-api
+  template:
+    metadata:
+      labels:
+        app: users-api
+        component: backend
+        tier: data
+    spec:
+      serviceAccountName: microservices-sa
+      containers:
+      - name: users-api
+        image: users-api:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8083
+          name: http
+          protocol: TCP
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 256Mi 
+        # Variables de entorno desde ConfigMap
+        envFrom:
+        - configMapRef:
+            name: users-api-config
+        
+        # JWT Secret desde Secret
+        env:
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: jwt-secret
+              key: JWT_SECRET
+
+---
+# Service para Users API
+apiVersion: v1
+kind: Service
+metadata:
+  name: users-api
+  namespace: microservices
+  labels:
+    app: users-api
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8083
+    targetPort: 8083
+    protocol: TCP
+    name: http
+  selector:
+    app: users-api
