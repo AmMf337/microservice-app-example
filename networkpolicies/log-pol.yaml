@@ -10,7 +10,7 @@ spec:
   policyTypes:
   - Ingress
   - Egress
-  ingress: []  # No permite tráfico entrante (es un worker que consume de Redis)
+  ingress: []  # No permite tráfico entrante (es un worker)
   egress:
   # Permite DNS
   - to:
@@ -20,7 +20,7 @@ spec:
     ports:
     - protocol: UDP
       port: 53
-  # Permite salida a redis para consumir mensajes
+  # Permite salida a redis
   - to:
     - podSelector:
         matchLabels:
@@ -28,3 +28,10 @@ spec:
     ports:
     - protocol: TCP
       port: 6379
+  - to:
+    - podSelector:
+        matchLabels:
+          app: zipkin
+    ports:
+    - protocol: TCP
+      port: 9411

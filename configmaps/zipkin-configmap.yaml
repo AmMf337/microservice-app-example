@@ -8,22 +8,30 @@ metadata:
     component: tracing
     tier: infrastructure
 data:
-  # Puerto en el que Zipkin escucha peticiones HTTP
+  apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: zipkin-config
+  namespace: microservices
+  labels:
+    app: zipkin
+    component: tracing
+    tier: infrastructure
+data:
+  # Puerto HTTP
   SERVER_PORT: "9411"
 
-  # Tipo de almacenamiento
-  STORAGE_TYPE: "redis"
+  STORAGE_TYPE: "mem"
 
-  # Configuración de Redis
-  REDIS_HOST: "redis"
-  REDIS_PORT: "6379"
+  # Configuración de memoria Java
+  JAVA_OPTS: "-Xms256m -Xmx512m"
 
-  # Sampling rate
+  # Sampling rate (1.0 = 100% de las trazas)
   SAMPLE_RATE: "1.0"
 
-  # Límite del tamaño del buffer en memoria (en spans)
+  # Límite del tamaño del buffer en memoria
   MAX_SPANS: "500000"
 
   # Nivel de logs
   LOG_LEVEL: "INFO"
-
+---

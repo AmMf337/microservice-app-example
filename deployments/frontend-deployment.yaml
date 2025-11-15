@@ -9,8 +9,8 @@ metadata:
     component: frontend
     tier: presentation
 spec:
-  replicas: 2
-  strategy:                   # ✅ Este bloque va aquí
+  replicas: 1
+  strategy:                 
     type: RollingUpdate
     rollingUpdate:
       maxUnavailable: 1
@@ -90,14 +90,14 @@ spec:
     kind: Deployment
     name: frontend
   minReplicas: 1
-  maxReplicas: 10
+  maxReplicas: 3
   metrics:
   - type: Resource
     resource:
       name: cpu
       target:
         type: Utilization
-        averageUtilization: 30
+        averageUtilization: 20
   - type: Resource
     resource:
       name: memory
