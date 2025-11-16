@@ -316,16 +316,47 @@ enviroment  the secret wouldn´t be here, it would be store in an external secre
 
 The network policies are configurated as the following:
 
-
 | **Component** | **Ingress** | **Egress** | **Ports** |
 |----------------|-------------------------------------|-----------------------------------|-------------|
-| **frontend** | ✅ Todo (LoadBalancer público) | • auth-api<br>• todos-api<br>• zipkin<br>• DNS (kube-system) | • 8081 (auth)<br>• 8082 (todos)<br>• 9411 (zipkin)<br>• 53 (DNS) |
-| **auth-api** | ✅ frontend | • users-api<br>• zipkin<br>• DNS (kube-system) | • 8081 (sí mismo)<br>• 8083 (users)<br>• 9411 (zipkin)<br>• 53 (DNS) |
-| **todos-api** | ✅ frontend | • redis<br>• zipkin<br>• DNS (kube-system) | • 8082 (sí mismo)<br>• 6379 (redis)<br>• 9411 (zipkin)<br>• 53 (DNS) |
-| **users-api** | ✅ auth-api | • DNS (kube-system) | • 8083 (sí mismo)<br>• 53 (DNS) |
+| **frontend** |  Any source | • auth-api<br>• todos-api<br>• zipkin<br>• DNS (kube-system) | • 8081 (auth)<br>• 8082 (todos)<br>• 9411 (zipkin)<br>• 53 (DNS) |
+| **auth-api** |  frontend | • users-api<br>• zipkin<br>• DNS (kube-system) | • 8081 (itself)<br>• 8083 (users)<br>• 9411 (zipkin)<br>• 53 (DNS) |
+| **todos-api** |  frontend | • redis<br>• zipkin<br>• DNS (kube-system) | • 8082 (itself)<br>• 6379 (redis)<br>• 9411 (zipkin)<br>• 53 (DNS) |
+| **users-api** |  auth-api | • DNS (kube-system) | • 8083 (itself)<br>• 53 (DNS) |
 | **redis** | • todos-api<br>• log-processor | • DNS (kube-system) | • 6379 (redis)<br>• 53 (DNS) |
-| **log-processor** | ❌ Ninguno (worker) | • redis<br>• zipkin<br>• DNS (kube-system) | • 6379 (redis)<br>• 9411 (zipkin)<br>• 53 (DNS) |
-| **zipkin** | • frontend<br>• auth-api<br>• users-api<br>• todos-api | • DNS (kube-system)<br>• Cualquier destino (storage externo) | • 9411 (zipkin)<br>• 53 (DNS) |
+| **log-processor** |  No one | • redis<br>• zipkin<br>• DNS (kube-system) | • 6379 (redis)<br>• 9411 (zipkin)<br>• 53 (DNS) |
+| **zipkin** | • frontend<br>• auth-api<br>• users-api<br>• todos-api | • DNS (kube-system)<br>• Any destiny | • 9411 (zipkin)<br>• 53 (DNS) |
 
 
+| **Component** | **Exposure Level** | **Architecture Function** | **Ingress Rules** | **Egress Rules** |
+|----------------|-------------------------|--------------------------------|--------------------|-------------------|
+| **frontend** | 🔴 Public (LoadBalancer) | User entry point | Allows all | auth-api, todos-api, zipkin, DNS |
+| **auth-api** | 🟡 Semi-private | Authentication | Frontend only | users-api, zipkin, DNS |
+| **todos-api** | 🟡 Semi-private | Tasks API | Frontend only | redis, zipkin, DNS |
+| **users-api** | 🟢 Private | User management | auth-api only | DNS only |
+| **redis** | 🟢 Private | Cache/Queue | todos-api, log-processor | DNS only |
+| **log-processor** | 🟢 Isolated (worker) | Asynchronous processing | None | redis, zipkin, DNS |
+| **zipkin** | 🟡 Internal | Monitoring/Tracing | All services | DNS, external storage |****
 
+### Grafana and Prometheus
+
+Prometheus is an software for recopilation of data and grafana an visuzalization tool with dashboard adaptable to many data source. To install them it was use a template of helm with the following steps:
+
+Create th namespace for monitoring:
+
+```bash
+kubectl create namespace monitoring
+```
+
+Add the helm repository and update:
+
+```bash
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo update
+```
+And install:
+
+```bash
+helm install prometheus prometheus-community/kube-prometheus-stack \
+  --namespace monitoring \
+  --create-namespace
+```
