@@ -123,7 +123,7 @@ selector:
 
 The manifest for the deployment of frontend has two additional characteristics implemented, horizontal pod scaler and an deployment strategy:
 
-***HPA*** :
+#### ***HPA*** :
 ```yaml
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
@@ -179,14 +179,14 @@ spec:
 
 The main parts are:
 
-- ** Maximun and minimun of replicas**: This define which is the minimun and maximun number of replicas the HPA can upScale or downScale:
+- **Maximun and minimun of replicas** : This define which is the minimun and maximun number of replicas the HPA can upScale or downScale:
 
 ```yaml
 minReplicas: 1
 maxReplicas: 3
 ```
 
-- **Metrics**: In this field we define the resources which state will define when to scale or descale the number of pods:
+**Metrics**: In this field we define the resources which state will define when to scale or descale the number of pods:
   
 ```yaml
   - type: Resource
@@ -203,10 +203,10 @@ maxReplicas: 3
         averageUtilization: 20
 ```
 
-**type:Resource**: Indicates this metric is based on Kubernetes resource requests.
-**name**: Name of the resource. 
-**averageUtilization**: is the threshold that will trigger the HPA.Once it is surpassed it triggers the HPA.
-**type:Utilization**: The kind of aspect that will be measure, in this case utilization.
+- **type:Resource**: Indicates this metric is based on Kubernetes resource requests.
+- **name**: Name of the resource. 
+- **averageUtilization**: is the threshold that will trigger the HPA.Once it is surpassed it triggers the HPA.
+- **type:Utilization**: The kind of aspect that will be measure, in this case utilization.
 
 - **behavior**: This section controls how fast and the agressiveness of the up scale or doewn scale of pods:
 
@@ -234,11 +234,11 @@ scaleUp:
 ```
 It is divide in up scaling and down scaling but has the same variables and attributes: 
 
-**stabilizationWindowSeconds**: Time of reaction to trigger the up or down scale.
-**policies**: The quantity of pods that will be up or down scale.
+- **stabilizationWindowSeconds**: Time of reaction to trigger the up or down scale.
+- **policies**: The quantity of pods that will be up or down scale.
     - type: It is the way the quantity of pods will be measure, percentage or the absolute value of pods.
-**selectPolicy**: Define which policy will be use. **Max** will choose the policy that allow to add or remove the most quantity of pods, **Min** will choose the one that sclae the least quantity of pods.
-**periodSeconds**: Window of time to remove or add pods.
+- **selectPolicy**: Define which policy will be use. **Max** will choose the policy that allow to add or remove the most quantity of pods, **Min** will choose the one that sclae the least quantity of pods.
+- **periodSeconds**: Window of time to remove or add pods.
 
 ### ConfigMaps
 
