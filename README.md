@@ -119,7 +119,7 @@ selector:
 - **port**: Port where other services/pods connect to this service
 - **targetPort**: Port on the container where traffic is sent
 - **nodePort**: Port exposed on the physical node. Range: 30000-32767
-### Frontend: Hpa and deployment strategy:
+### Frontend: Hpa and deployment strategy
 
 The manifest for the deployment of frontend has two additional characteristics implemented, horizontal pod scaler and an deployment strategy:
 
@@ -208,7 +208,13 @@ maxReplicas: 3
 - **averageUtilization**: is the threshold that will trigger the HPA.Once it is surpassed it triggers the HPA.
 - **type:Utilization**: The kind of aspect that will be measure, in this case utilization.
 
-- **behavior**: This section controls how fast and the agressiveness of the up scale or doewn scale of pods:
+For the cluster to be able to monitor this metrics it is neccesary to activate the met5ric server with the following command: 
+
+```yaml
+minikube addons enable metrics-server
+```
+
+**behavior**: This section controls how fast and the agressiveness of the up scale or doewn scale of pods:
 
 ```yaml
  scaleDown:
@@ -239,6 +245,23 @@ It is divide in up scaling and down scaling but has the same variables and attri
     - type: It is the way the quantity of pods will be measure, percentage or the absolute value of pods.
 - **selectPolicy**: Define which policy will be use. **Max** will choose the policy that allow to add or remove the most quantity of pods, **Min** will choose the one that sclae the least quantity of pods.
 - **periodSeconds**: Window of time to remove or add pods.
+#### ***Deployment strategy*** :
+
+The deployment strategy defines the way the pods will be update when a new version of the app is configure in the deployments.
+
+```yaml
+spec:
+  replicas: 1
+  strategy:                 
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+```
+- **type**: The type of deployment strategy.
+  - **RollingUpdate**: gradually replaces old pods with new ones, ensuring some pods remain available during the update process  
+- **maxUnavailable:** The number of pods that can be down during the update simultaneously
+- **maxSurge**: The number of pods that can be created surpasing the specified in the number of replicas.
 
 ### ConfigMaps
 
@@ -263,4 +286,46 @@ data:
   OTHERSERVICE_BASEURL: "http://service:9411/"
 
 ```
-It has similar components to deployments and services but it's special field is the field of data where different variables are declarate with the format NAME=VALUE, this notation allows as to declare variables for different propose
+It has similar components to deployments and services but it's special field is the field of data where different variables are declarate with the format NAME:VALUE, this notation allows as to declare variables for different propose.
+
+### Secrets
+
+The **Secrets.yaml** is used to define kubernetes secret resource like tokens use by the app for protected access.The explanation here would ignore the common parts that has been explain before:
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: jwt-secret
+  namespace: microservices
+  labels:
+    app: microservices
+    component: security
+    tier: shared
+type: Opaque
+stringData: 
+  JWT_SECRET: "myfancysecret"
+```
+- **stringData**: It indicate that data has a plain text format.
+- **type**: Type of data. It can indicate the data and the format expected.
+
+In this case for simplicity  it has the type "Opaque" that means that it has not any kind of format, just the common KEY:VALUE format.In a real
+enviroment  the secret wouldn´t be here, it would be store in an external secrets operartor like **AWS Secrets manager**  and there would be a reference to that stored value.
+
+### Network policies
+
+The network policies are configurated as the following:
+
+
+| **Component** | **Ingress** | **Egress** | **Ports** |
+|----------------|-------------------------------------|-----------------------------------|-------------|
+| **frontend** | ✅ Todo (LoadBalancer público) | • auth-api<br>• todos-api<br>• zipkin<br>• DNS (kube-system) | • 8081 (auth)<br>• 8082 (todos)<br>• 9411 (zipkin)<br>• 53 (DNS) |
+| **auth-api** | ✅ frontend | • users-api<br>• zipkin<br>• DNS (kube-system) | • 8081 (sí mismo)<br>• 8083 (users)<br>• 9411 (zipkin)<br>• 53 (DNS) |
+| **todos-api** | ✅ frontend | • redis<br>• zipkin<br>• DNS (kube-system) | • 8082 (sí mismo)<br>• 6379 (redis)<br>• 9411 (zipkin)<br>• 53 (DNS) |
+| **users-api** | ✅ auth-api | • DNS (kube-system) | • 8083 (sí mismo)<br>• 53 (DNS) |
+| **redis** | • todos-api<br>• log-processor | • DNS (kube-system) | • 6379 (redis)<br>• 53 (DNS) |
+| **log-processor** | ❌ Ninguno (worker) | • redis<br>• zipkin<br>• DNS (kube-system) | • 6379 (redis)<br>• 9411 (zipkin)<br>• 53 (DNS) |
+| **zipkin** | • frontend<br>• auth-api<br>• users-api<br>• todos-api | • DNS (kube-system)<br>• Cualquier destino (storage externo) | • 9411 (zipkin)<br>• 53 (DNS) |
+
+
+
